@@ -123,16 +123,18 @@ func TestExplainAgent_Interface(t *testing.T) {
 // capturingProvider records the prompt sent to Complete for inspection.
 type capturingProvider struct {
 	lastPrompt string
+	callCount  int
 }
 
 func (c *capturingProvider) Name() string   { return "capture" }
 func (c *capturingProvider) Model() string  { return "capture-model" }
 func (c *capturingProvider) MaxTokens() int { return 8192 }
 func (c *capturingProvider) Complete(_ context.Context, msgs []internal.Message) (string, types.Usage, error) {
+	c.callCount++
 	for _, m := range msgs {
 		c.lastPrompt += m.Content
 	}
-	return "mock explanation", types.Usage{PromptTokens: 100, CompletionTokens: 50}, nil
+	return "## Summary\nUpgrade openssl.\n\n## Fix\napt-get install openssl=3.0.14\n\n## Diff\n```diff\n--- a/Dockerfile\n+++ b/Dockerfile\n@@ -1 +1 @@\n-openssl=3.0.13\n+openssl=3.0.14\n```\n\n## Risk\nNone.", types.Usage{PromptTokens: 100, CompletionTokens: 50}, nil
 }
 
 // errorProvider always returns an error from Complete.

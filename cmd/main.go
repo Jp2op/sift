@@ -211,6 +211,34 @@ func selectProvider(cfg config.Config) internal.Provider {
 	switch cfg.Provider {
 	case "ollama":
 		return provider.NewOllamaProvider(cfg.OllamaBaseURL, cfg.Model)
+	case "anthropic":
+		p, err := provider.NewAnthropicProvider(cfg.Model)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error:", err)
+			os.Exit(1)
+		}
+		return p
+	case "openai":
+		p, err := provider.NewOpenAIProvider(cfg.Model)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error:", err)
+			os.Exit(1)
+		}
+		return p
+
+	case "gemini":
+    p, err := provider.NewGeminiProvider(
+        "project-6a05dcc2-fe5f-4095-82d",
+        "us-central1",
+        cfg.Model,
+    )
+    if err != nil {
+        fmt.Fprintln(os.Stderr, "Error:", err)
+        os.Exit(1)
+    }
+    return p
+
+	
 	default:
 		return &provider.MockProvider{ModelName: cfg.Model}
 	}
@@ -220,6 +248,8 @@ func selectReporter(cfg config.Config) internal.Reporter {
 	switch cfg.Output {
 	case "json":
 		return &output.JSONReporter{}
+	case "sarif":
+		return &output.SARIFReporter{}
 	default:
 		return &output.TerminalReporter{}
 	}
